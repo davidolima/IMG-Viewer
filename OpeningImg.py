@@ -1,19 +1,24 @@
 import os, ctypes
 from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QPixmap, QFileOpenEvent
+from PyQt5.QtGui import QPixmap, QFileOpenEvent, QIcon
 from PyQt5.QtWidgets import (QWidget, QLabel,QSizePolicy,QSizeGrip,QApplication, QFileDialog)
 
 class Ui_MAIN(object):
 
     def setupUI(self, MAIN):
-
         MAIN.setObjectName("MAIN")
         MAIN.resize(500,500)
+        scriptDir = os.path.dirname(os.path.realpath(__file__))
+        MAIN.setWindowIcon(QtGui.QIcon(scriptDir + os.path.sep + 'Icon.png'))
+
+
 
         self.centralwidget = QtWidgets.QWidget(MAIN)
         self.centralwidget.setObjectName("centralwidget")
+        self.centralwidget.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
         self.Img = QtWidgets.QLabel(self.centralwidget)
+        self.Img.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
 
         self.retranslateUi(MAIN)
         
@@ -22,13 +27,17 @@ class Ui_MAIN(object):
         self.centralwidget.setMaximumSize(user32.GetSystemMetrics(78),user32.GetSystemMetrics(79))
         self.Img.setMaximumSize(user32.GetSystemMetrics(78),user32.GetSystemMetrics(79))
 
-        i = QPixmap(QFileDialog.getOpenFileName()[0],'r')
+        self.file = QFileDialog.getOpenFileName()[0]
+        self.imgFile = QPixmap(self.file,'r')
         
-        imgDimensions = str(i.size())[str(i.size()).index("("):]
+        imgDimensions = str(self.imgFile.size())[str(self.imgFile.size()).index("("):]
         print(imgDimensions)
         imgWidth = int(imgDimensions[:imgDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
         imgHeight = int(imgDimensions[imgDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
 
+        fileName = self.file[self.file.rindex("/")+1:] + " ({}x{})".format(imgWidth,imgHeight)
+
+        MAIN.setWindowTitle(fileName)
         print("\nImage Width:",imgWidth,"\nImage Height:",imgHeight)
 
         mwDimensions = str(self.Img.maximumSize())[str(self.Img.maximumSize()).index("(")+1:]
@@ -37,18 +46,20 @@ class Ui_MAIN(object):
 
         print("\nMaximum Width",mwWidth,"\nMaximum Height:",mwHeight)
 
-        if imgHeight > mwHeight and imgWidth > mwWidth:
-            i = i.scaled(mwWidth,mwHeight)
+        if imgHeight > mwHeight:
+            self.imgFile = self.imgFile.scaled(self.imgFile.width(),mwHeight)
         
-        self.Img.setPixmap(i)
-        self.centralwidget.setGeometry(0,0,i.width(),i.height())
-        MAIN.resize(i.width(),i.height())
-            
+        if imgWidth > mwWidth:
+            self.imgFile = self.imgFile.scaled(mwWidth, self.imgFile.height())
+
+        self.Img.setPixmap(self.imgFile)
+        self.centralwidget.setGeometry(0,0,self.imgFile.width(),self.imgFile.height())
+        MAIN.resize(self.imgFile.width(),self.imgFile.height())
+
 
     def retranslateUi(self, MAIN):
-            _translate = QtCore.QCoreApplication.translate
-            MAIN.setWindowTitle(_translate("MAIN", "IMG Viewer"))
-
+        _translate = QtCore.QCoreApplication.translate
+        MAIN.setWindowTitle(_translate("MAIN", "IMG Viewer"))
 
 
 if __name__ == "__main__":
