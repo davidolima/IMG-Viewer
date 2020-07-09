@@ -1,4 +1,4 @@
-import os
+import os, sys, time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QEvent, QSize
 from PyQt5.Qt import Qt
@@ -20,7 +20,6 @@ class MainWindow(QWidget):
 
         self.Frame = QtWidgets.QWidget(MAIN)
         self.Img = QtWidgets.QLabel(self.Frame)
-        # self.Img.setStyleSheet("background-color: red;")
         self.Img.setFrameStyle(QFrame.Panel | QFrame.Raised)
         self.Img.setLineWidth(2)
         
@@ -36,7 +35,13 @@ class MainWindow(QWidget):
         self.retranslateUi(MAIN)
         
         try:
-            self.file = QFileDialog.getOpenFileName()[0]
+            if len(sys.argv) <= 1:
+                self.file = QFileDialog.getOpenFileName()[0]
+            else:
+                self.file = str(sys.argv[1]).replace("\\",'/')
+
+            print(self.file)
+
             self.imgFile = QPixmap(self.file,'r')
             self.resizeWindow(MAIN)
             self.centerWindow()
@@ -48,23 +53,20 @@ class MainWindow(QWidget):
             self.error.show()
 
 
+
     def resizeEvent(self, event):
+
+        print('imgFile:',self.imgFile.size())
 
         self.Frame.setMinimumSize(event.size())
         self.Frame.setMaximumSize(event.size())
+
+        self.imgFile2 = self.imgFile.scaled(self.Frame.maximumWidth(),self.Frame.maximumHeight(), QtCore.Qt.KeepAspectRatio)
+
+        self.Img.setPixmap(self.imgFile2)
+        self.Img.adjustSize()
+
         self.centerWindow()
-
-        # self.Img.size().scaled(self.Frame.maximumSize(), QtCore.Qt.KeepAspectRatio)
-
-        # oldEventDimensions = str(event.oldSize())[str(event.oldSize()).index("("):]
-        # oldEventWidth = int(oldEventDimensions[:oldEventDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
-        # oldEventHeight = int(oldEventDimensions[oldEventDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
-
-        # newEventDimensions = str(event.size())[str(event.size()).index("("):]
-        # newEventWidth = int(newEventDimensions[:newEventDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
-        # newEventHeight = int(newEventDimensions[newEventDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
-
-        # self.centerWindow()
 
     def wheelEvent(self, event):
         print(event.angleDelta())
@@ -93,17 +95,17 @@ class MainWindow(QWidget):
         print("\nImage Width:",imgWidth,"\nImage Height:",imgHeight)
         print("\nMaximum Width:",self.sysWidth,"\nMaximum Height:",self.sysHeight)
 
-        if imgHeight > self.sysHeight:
-            self.imgFile = self.imgFile.scaled(imgWidth,self.sysHeight, QtCore.Qt.KeepAspectRatio)
-            imgDimensions = str(self.imgFile.size())[str(self.imgFile.size()).index("("):]
-            imgWidth = int(imgDimensions[:imgDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
-            imgHeight = int(imgDimensions[imgDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
+        # if imgHeight > self.sysHeight:
+        #     self.imgFile = self.imgFile.scaled(imgWidth,self.sysHeight, QtCore.Qt.KeepAspectRatio)
+        #     imgDimensions = str(self.imgFile.size())[str(self.imgFile.size()).index("("):]
+        #     imgWidth = int(imgDimensions[:imgDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
+        #     imgHeight = int(imgDimensions[imgDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
         
-        if imgWidth > self.sysWidth:
-            self.imgFile = self.imgFile.scaled(self.sysWidth, imgHeight, QtCore.Qt.KeepAspectRatio)
-            imgDimensions = str(self.imgFile.size())[str(self.imgFile.size()).index("("):]
-            imgWidth = int(imgDimensions[:imgDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
-            imgHeight = int(imgDimensions[imgDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
+        # if imgWidth > self.sysWidth:
+        #     self.imgFile = self.imgFile.scaled(self.sysWidth, imgHeight, QtCore.Qt.KeepAspectRatio)
+        #     imgDimensions = str(self.imgFile.size())[str(self.imgFile.size()).index("("):]
+        #     imgWidth = int(imgDimensions[:imgDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
+        #     imgHeight = int(imgDimensions[imgDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
     
 
 
@@ -116,7 +118,6 @@ class MainWindow(QWidget):
         self.Img.adjustSize()
 
 if __name__ == "__main__":
-    import sys
     app = QtWidgets.QApplication(sys.argv)
     MAIN = MainWindow(QtWidgets.QMainWindow())
 
