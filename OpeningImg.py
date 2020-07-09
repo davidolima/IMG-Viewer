@@ -1,16 +1,14 @@
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QEvent, QSize
-from PyQt5.Qt import Qt
-from PyQt5.QtGui import QPixmap, QFileOpenEvent, QIcon, QResizeEvent, QMouseEvent
+from PyQt5.QtGui import QPixmap, QFileOpenEvent, QIcon, QResizeEvent
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import (QWidget, QLabel, QSizePolicy, QSizeGrip, QApplication, QFileDialog, QDesktopWidget, QMessageBox, QFrame)
+from PyQt5.QtWidgets import (QWidget, QLabel,QSizePolicy,QSizeGrip,QApplication, QFileDialog, QDesktopWidget, QMessageBox)
 
-class MainWindow(QWidget):
+class Ui_MAIN(object):
 
     def init(self, MAIN):
-        super().__init__()
-        
+
         #setting things up
         MAIN.setObjectName("MAIN")
         MAIN.setMinimumSize(500,500)
@@ -19,10 +17,8 @@ class MainWindow(QWidget):
         MAIN.setStyleSheet("background-color: gray;")
 
         self.Frame = QtWidgets.QWidget(MAIN)
+        self.Frame.setSizeIncrement(QSize(30,30))
         self.Img = QtWidgets.QLabel(self.Frame)
-        # self.Img.setStyleSheet("background-color: red;")
-        self.Img.setFrameStyle(QFrame.Panel | QFrame.Raised)
-        self.Img.setLineWidth(2)
         
         sysRes = QApplication.desktop().screenGeometry()
         self.sysWidth = sysRes.width()
@@ -39,7 +35,7 @@ class MainWindow(QWidget):
             self.file = QFileDialog.getOpenFileName()[0]
             self.imgFile = QPixmap(self.file,'r')
             self.resizeWindow(MAIN)
-            self.centerWindow()
+            self.centerWindow(MAIN)
         
         except:
             self.error = QMessageBox(MAIN)
@@ -48,42 +44,18 @@ class MainWindow(QWidget):
             self.error.show()
 
 
-    def resizeEvent(self, event):
-
-        self.Frame.setMinimumSize(event.size())
-        self.Frame.setMaximumSize(event.size())
-        self.centerWindow()
-
-        # self.Img.size().scaled(self.Frame.maximumSize(), QtCore.Qt.KeepAspectRatio)
-
-        # oldEventDimensions = str(event.oldSize())[str(event.oldSize()).index("("):]
-        # oldEventWidth = int(oldEventDimensions[:oldEventDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
-        # oldEventHeight = int(oldEventDimensions[oldEventDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
-
-        # newEventDimensions = str(event.size())[str(event.size()).index("("):]
-        # newEventWidth = int(newEventDimensions[:newEventDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
-        # newEventHeight = int(newEventDimensions[newEventDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
-
-        # self.centerWindow()
-
-    def wheelEvent(self, event):
-        print(event.angleDelta())
-
-    def mouseMoveEvent(self, event):
-        self.Frame.move(event.x(),event.y())
-
     def retranslateUi(self, MAIN):
         _translate = QtCore.QCoreApplication.translate
         MAIN.setWindowTitle(_translate("MAIN", "IMG Viewer"))
 
-    def centerWindow(self):
-        fg = self.Img.frameGeometry()
-        cp = self.Frame.frameGeometry().center()
-        fg.moveCenter(cp)
-        self.Img.move(fg.topLeft())
-
+    def centerWindow(self, MAIN):
+        rect = MAIN.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        rect.moveCenter(cp)
+        # MAIN.move(rect.topLeft())
 
     def resizeWindow(self, MAIN):
+
         imgDimensions = str(self.imgFile.size())[str(self.imgFile.size()).index("("):]
         imgWidth = int(imgDimensions[:imgDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
         imgHeight = int(imgDimensions[imgDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
@@ -107,22 +79,24 @@ class MainWindow(QWidget):
     
 
 
-        # MAIN.setMinimumSize(self.imgFile.width(),self.imgFile.height())
-        MAIN.setGeometry(0,0,self.sysWidth,self.sysHeight)
+        MAIN.setMinimumSize(self.imgFile.width(),self.imgFile.height())
         MAIN.showMaximized()
-        self.Frame.setGeometry(0,0,MAIN.width(),MAIN.height())
         self.Img.setPixmap(self.imgFile)
+        rect = self.Frame.frameGeometry()
+        cp = MAIN.frameGeometry().center()
+        rect.moveCenter(cp)
+        self.Frame.move(rect.topLeft())
+
         MAIN.setWindowTitle(fileName)
+        # MAIN.resize(self.sysWidth,self.sysHeight)
+        self.Frame.setGeometry(0,0,imgWidth,self.sysHeight)
         self.Img.adjustSize()
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    MAIN = MainWindow(QtWidgets.QMainWindow())
-
-    # ui = MainWindow(MAIN)
-    # ui.show()
-    # ui.__init__(MAIN)
-
-    MAIN.init(MAIN)
+    MAIN = QtWidgets.QMainWindow()
+    ui = Ui_MAIN()
+    ui.init(MAIN)
+    MAIN.show()
     sys.exit(app.exec_())
