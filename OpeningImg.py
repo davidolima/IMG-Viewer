@@ -15,7 +15,7 @@ class MainWindow(QWidget):
         MAIN.setObjectName("MAIN")
         MAIN.setMinimumSize(500,500)
         scriptDir = os.path.dirname(os.path.realpath(__file__))
-        MAIN.setWindowIcon(QtGui.QIcon(scriptDir + os.path.sep + 'Icon.png'))
+        MAIN.setWindowIcon(QtGui.QIcon(scriptDir + os.path.sep + 'Icon.ico'))
         MAIN.setStyleSheet("background-color: gray;")
 
         self.Frame = QtWidgets.QWidget(MAIN)
@@ -53,6 +53,7 @@ class MainWindow(QWidget):
             self.error.show()
 
         self.oldPos = QPoint
+        self.bg = 1
 
 
 
@@ -83,6 +84,12 @@ class MainWindow(QWidget):
         print(event.pos())
 
     def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            self.bg += 1
+            if self.bg%2 == 0:
+                MAIN.setStyleSheet("background-color: gray;")
+            else:
+                MAIN.setStyleSheet("background-color: white;")
         self.oldPos = event.globalPos()
 
     def mouseMoveEvent(self, event):
