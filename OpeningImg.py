@@ -1,6 +1,6 @@
 import os, sys, time
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QEvent, QSize
+from PyQt5.QtCore import QEvent, QSize, QPoint
 from PyQt5.Qt import Qt
 from PyQt5.QtGui import QPixmap, QFileOpenEvent, QIcon, QResizeEvent, QMouseEvent
 from PyQt5.QtGui import *
@@ -29,7 +29,7 @@ class MainWindow(QWidget):
 
         MAIN.setMaximumSize(self.sysWidth,self.sysHeight)
         self.Frame.setMaximumSize(self.sysWidth,self.sysHeight)
-        self.Img.setMaximumSize(self.sysWidth,self.sysHeight)
+        # self.Img.setMaximumSize(self.sysWidth,self.sysHeight)
 
         #Program running
         self.retranslateUi(MAIN)
@@ -52,6 +52,8 @@ class MainWindow(QWidget):
             self.error.setText("Please select an image file and try again.")
             self.error.show()
 
+        self.oldPos = QPoint
+
 
 
     def resizeEvent(self, event):
@@ -69,10 +71,24 @@ class MainWindow(QWidget):
         self.centerWindow()
 
     def wheelEvent(self, event):
-        print(event.angleDelta())
+        self.zoom = event.angleDelta().y()
+
+        if self.Img.size().width() <= self.sysWidth*3 or self.Img.size().width() <= self.sysWidth*3:
+            self.imgFile2 = self.imgFile.scaled(self.Img.size().width()+self.zoom, self.Img.size().height()+self.zoom, QtCore.Qt.KeepAspectRatio)
+        else:
+            self.imgFile2 = self.imgFile.scaled(self.Img.size().width()-130, self.Img.size().height()-130, QtCore.Qt.KeepAspectRatio)
+        self.Img.setPixmap(self.imgFile2)
+        self.Img.adjustSize()
+
+        print(event.pos())
+
+    def mousePressEvent(self, event):
+        self.oldPos = event.globalPos()
 
     def mouseMoveEvent(self, event):
-        self.Frame.move(event.x(),event.y())
+        delta = QPoint(event.globalPos() - self.oldPos)
+        self.Img.move(self.Img.x() + delta.x(), self.Img.y() + delta.y())
+        self.oldPos = event.globalPos()
 
     def retranslateUi(self, MAIN):
         _translate = QtCore.QCoreApplication.translate
