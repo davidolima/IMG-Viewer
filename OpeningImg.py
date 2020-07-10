@@ -1,8 +1,8 @@
 import os, sys, time
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QEvent, QSize, QPoint
+from PyQt5.QtCore import QEvent, QSize, QPoint, QByteArray
 from PyQt5.Qt import Qt
-from PyQt5.QtGui import QPixmap, QFileOpenEvent, QIcon, QResizeEvent, QMouseEvent
+from PyQt5.QtGui import QPixmap, QFileOpenEvent, QIcon, QResizeEvent, QMouseEvent, QMovie
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (QWidget, QLabel, QSizePolicy, QSizeGrip, QApplication, QFileDialog, QDesktopWidget, QMessageBox, QFrame)
 
@@ -27,11 +27,8 @@ class MainWindow(QWidget):
         self.sysWidth = sysRes.width()
         self.sysHeight = sysRes.height()
 
-        MAIN.setMaximumSize(self.sysWidth,self.sysHeight)
         self.Frame.setMaximumSize(self.sysWidth,self.sysHeight)
-        # self.Img.setMaximumSize(self.sysWidth,self.sysHeight)
 
-        #Program running
         self.retranslateUi(MAIN)
         
         try:
@@ -40,13 +37,19 @@ class MainWindow(QWidget):
             else:
                 self.file = str(sys.argv[1]).replace("\\",'/')
 
+            if self.file[self.file.rindex('.'):] == '.gif':
+                self.imgFile = QMovie(self.file, QByteArray(), self)
+
+            else:
+                self.imgFile = QPixmap(self.file,'r')
+
             print(self.file)
 
-            self.imgFile = QPixmap(self.file,'r')
             self.resizeWindow(MAIN)
             self.centerWindow()
         
-        except:
+        except Exception as e:
+            print(e)
             self.error = QMessageBox(MAIN)
             self.error.setWindowTitle("NOT AN IMAGE FILE!")
             self.error.setText("Please select an image file and try again.")
@@ -55,38 +58,47 @@ class MainWindow(QWidget):
         self.oldPos = QPoint
         self.bg = 1
 
-
-
     def resizeEvent(self, event):
 
-        print('imgFile:',self.imgFile.size())
-
+        print(event.size())
         self.Frame.setMinimumSize(event.size())
         self.Frame.setMaximumSize(event.size())
 
-        self.imgFile2 = self.imgFile.scaled(self.Frame.maximumWidth(),self.Frame.maximumHeight(), QtCore.Qt.KeepAspectRatio)
 
-        self.Img.setPixmap(self.imgFile2)
+        if self.file[self.file.rindex('.'):] == '.gif':
+            pass
+
+        else:
+            self.imgFile2 = self.imgFile.scaled(self.Frame.maximumWidth(),self.Frame.maximumHeight(), QtCore.Qt.KeepAspectRatio)
+            self.Img.setPixmap(self.imgFile2)
+
         self.Img.adjustSize()
-
         self.centerWindow()
 
     def wheelEvent(self, event):
         self.zoom = event.angleDelta().y()
 
-        if self.Img.size().width() <= self.sysWidth*3 or self.Img.size().width() <= self.sysWidth*3:
-            self.imgFile2 = self.imgFile.scaled(self.Img.size().width()+self.zoom, self.Img.size().height()+self.zoom, QtCore.Qt.KeepAspectRatio)
+        if self.file[self.file.rindex('.'):] == '.gif':
+            pass
+
+
         else:
-            self.imgFile2 = self.imgFile.scaled(self.Img.size().width()-130, self.Img.size().height()-130, QtCore.Qt.KeepAspectRatio)
-        self.Img.setPixmap(self.imgFile2)
+            if self.Img.size().width() <= self.sysWidth*3 or self.Img.size().width() <= self.sysWidth*3:
+                self.imgFile2 = self.imgFile.scaled(self.Img.size().width()+self.zoom, self.Img.size().height()+self.zoom, QtCore.Qt.KeepAspectRatio)
+                
+            else:
+                self.imgFile2 = self.imgFile.scaled(self.Img.size().width()-130, self.Img.size().height()-130, QtCore.Qt.KeepAspectRatio)
+        
+            self.Img.setPixmap(self.imgFile2)
+
         self.Img.adjustSize()
 
-        print(event.pos())
+        print(self.Img.size())
 
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:
             self.bg += 1
-            if self.bg%2 == 0:
+            if self.bg%2 != 0:
                 MAIN.setStyleSheet("background-color: gray;")
             else:
                 MAIN.setStyleSheet("background-color: white;")
@@ -109,44 +121,28 @@ class MainWindow(QWidget):
 
 
     def resizeWindow(self, MAIN):
-        imgDimensions = str(self.imgFile.size())[str(self.imgFile.size()).index("("):]
-        imgWidth = int(imgDimensions[:imgDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
-        imgHeight = int(imgDimensions[imgDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
-
-        fileName = self.file[self.file.rindex("/")+1:] + " ({}x{})".format(imgWidth,imgHeight)
-
-        print("\nImage Width:",imgWidth,"\nImage Height:",imgHeight)
         print("\nMaximum Width:",self.sysWidth,"\nMaximum Height:",self.sysHeight)
 
-        # if imgHeight > self.sysHeight:
-        #     self.imgFile = self.imgFile.scaled(imgWidth,self.sysHeight, QtCore.Qt.KeepAspectRatio)
-        #     imgDimensions = str(self.imgFile.size())[str(self.imgFile.size()).index("("):]
-        #     imgWidth = int(imgDimensions[:imgDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
-        #     imgHeight = int(imgDimensions[imgDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
+        self.Frame.setGeometry(0,0,MAIN.width(),MAIN.height())
+
+        if self.file[self.file.rindex('.'):] == '.gif':
+            self.Img.setMovie(self.imgFile)
+            self.Img.movie().start()
+            self.movie_size = self.imgFile.currentImage().size()
+            fileName = self.file[self.file.rindex("/")+1:] + " ({}x{})".format(self.movie_size.width(),self.movie_size.height())
+            MAIN.setMinimumSize(self.movie_size.width(),self.movie_size.height())
+
+        else:
+            self.Img.setPixmap(self.imgFile)
+            self.Img.adjustSize()
+            fileName = self.file[self.file.rindex("/")+1:] + " ({}x{})".format(self.imgFile.width(),self.imgFile.height())
         
-        # if imgWidth > self.sysWidth:
-        #     self.imgFile = self.imgFile.scaled(self.sysWidth, imgHeight, QtCore.Qt.KeepAspectRatio)
-        #     imgDimensions = str(self.imgFile.size())[str(self.imgFile.size()).index("("):]
-        #     imgWidth = int(imgDimensions[:imgDimensions.index(",")] .replace(",","").replace(" ","").replace("(",""))
-        #     imgHeight = int(imgDimensions[imgDimensions.index(","):].replace(",","").replace(" ","").replace(")",""))
-    
-
-
-        # MAIN.setMinimumSize(self.imgFile.width(),self.imgFile.height())
         MAIN.setGeometry(0,0,self.sysWidth,self.sysHeight)
         MAIN.showMaximized()
-        self.Frame.setGeometry(0,0,MAIN.width(),MAIN.height())
-        self.Img.setPixmap(self.imgFile)
         MAIN.setWindowTitle(fileName)
-        self.Img.adjustSize()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MAIN = MainWindow(QtWidgets.QMainWindow())
-
-    # ui = MainWindow(MAIN)
-    # ui.show()
-    # ui.__init__(MAIN)
-
     MAIN.init(MAIN)
     sys.exit(app.exec_())
