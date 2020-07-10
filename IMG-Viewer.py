@@ -6,6 +6,8 @@ from PyQt5.QtGui import QPixmap, QFileOpenEvent, QIcon, QResizeEvent, QMouseEven
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (QWidget, QLabel, QSizePolicy, QSizeGrip, QApplication, QFileDialog, QDesktopWidget, QMessageBox, QFrame)
 
+# Made by David de Oliveira Lima (github.com/davidolima)
+
 class MainWindow(QWidget):
 
     def init(self, MAIN):
