@@ -102,6 +102,9 @@ class MainWindow(QWidget):
                 MAIN.setStyleSheet("background-color: gray;")
             else:
                 MAIN.setStyleSheet("background-color: white;")
+
+        if event.button() == Qt.MiddleButton:
+            self.centerWindow()
         self.oldPos = event.globalPos()
 
     def mouseMoveEvent(self, event):
